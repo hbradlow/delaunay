@@ -99,8 +99,8 @@ class Face: #convex
         self.id = generate_id()
     def neighbors(self):
         for edge in self.edges():
-            if edge.left:
-                yield edge.left
+            if edge.right:
+                yield edge.right
     def reverse_edges(self):
         """
             Return the edges of this face.

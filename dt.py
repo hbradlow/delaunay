@@ -28,21 +28,21 @@ class Triangulation:
             if not first_vertex:
                 first_vertex = v
             f = Face()
-            self.edges.append(make_edge(vertex,v,left=prev_face,right=f))
+            self.edges.append(make_edge(vertex,v,right=prev_face,left=f))
             self.faces.append(f)
 
             if prev_vertex:
                 e1 = v.get_edge(prev_vertex)
                 e2 = prev_vertex.get_edge(v)
-                e1.left = f
-                e2.right = f
+                e2.left = prev_face
+                e1.right = prev_face
 
             prev_face = f
             prev_vertex = v
 
-        e1 = prev_vertex.get_edge(first_vertex)
-        e2 = first_vertex.get_edge(prev_vertex)
-        e1.left = f
-        e2.right = f
+        e1 = first_vertex.get_edge(prev_vertex)
+        e2 = prev_vertex.get_edge(first_vertex)
+        e2.left = prev_face
+        e1.right = prev_face
 
         self.vertices.append(vertex)

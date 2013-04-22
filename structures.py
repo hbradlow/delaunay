@@ -18,6 +18,11 @@ def make_edge(origin,destination,left=None,right=None):
 
     return e1
 
+def sort_vertices_around(vertex,vertices):
+    def vertex_compare(v1,v2):
+        return orient_2d(v1,vertex,v2)
+    return sorted(vertices,cmp=vertex_compare)
+
 def incircle(a,b,c,d):
     def get_vector(p):
         return [p.x,p.y,p.x**2+p.y**2,1]
@@ -75,6 +80,9 @@ class Edge:
         self.right = right
         self.id = generate_id()
 
+    def remove(self):
+        self.origin.edges.remove(self)
+
     def vertex_on_right(self,vertex):
         return orient_2d(self.origin,self.destination,vertex) <= 0
 
@@ -98,6 +106,10 @@ class Face: #convex
         self.edge = edge
         self.conflict = False
         self.id = generate_id()
+    def merge_with(self,other):
+        for edge in self.edges():
+            edge.left = other
+            edge.get_reverse().right = other
     def neighbors(self):
         for edge in self.edges():
             if edge.right:
@@ -129,10 +141,10 @@ class Face: #convex
         return True
     def incircle(self,vertex):
         g = self.vertices()
+        #use three consecutive points on the face
         a = next(g)
         b = next(g)
         c = next(g)
-        print a,b,c
         return incircle(a,b,c,vertex)
     def dual(self):
         #TODO fix

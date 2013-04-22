@@ -50,7 +50,7 @@ class Polygon2D:
         canvas.create_polygon(*args,fill=self.fill)
 
 class Visualizer:
-    def __init__(self,root,width,height,key_callback=None,mouse_callback=None):
+    def __init__(self,root,width,height,key_callback=None,mouse_callback=None,click_callback=None):
         self.drawables = [] #list of drawable objects
 
         self.frame = tk.Frame(root)
@@ -58,6 +58,7 @@ class Visualizer:
         self.canvas = tk.Canvas(self.frame,bg="white",width=width,height=height)
         self.canvas.pack()
         self.frame.bind_all("<Motion>",mouse_callback)
+        self.frame.bind_all("<Button-1>",click_callback)
         self.frame.bind("<Key>",key_callback)
         self.frame.pack()
     def add_drawable(self,drawable):

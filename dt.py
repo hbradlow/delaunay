@@ -14,12 +14,15 @@ class Triangulation:
 
     def merge_faces(self,faces):
         edges = []
+        duplicates = []
         first_face = None
         for face in faces:
             if not first_face:
                 first_face = face
             for edge in list(face.edges()):
                 if edge in edges or edge.get_reverse() in edges:
+                    duplicates.append(edge)
+
                     face.merge_with(edge.left)
 
                     if edge in self.edges:
@@ -30,8 +33,12 @@ class Triangulation:
                     edge.remove()
                     edge.get_reverse().remove()
 
-                    first_face.edge = face.edge
-                    self.faces.remove(face)
+                    for new_edge in edges:
+                        if new_edge not in duplicates:
+                            first_face.edge = new_edge
+                            break
+                    if face in self.faces:
+                        self.faces.remove(face)
                 edges.append(edge)
         return first_face.vertices()
 

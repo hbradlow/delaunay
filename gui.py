@@ -36,17 +36,30 @@ class Line2D:
     def draw(self,canvas):
         canvas.create_line(self.start.x,self.start.y,self.end.x,self.end.y)
 
+class Polygon2D:
+    def __init__(self,vertices,fill="red"):
+        self.vertices = vertices
+        self.fill = fill
+    def __repr__(self):
+        return "<Polygon2D>"
+    def draw(self,canvas):
+        args = []
+        for v in self.vertices:
+            args.append(v.x)
+            args.append(v.y)
+        canvas.create_polygon(*args,fill=self.fill)
+
 class Visualizer:
-    def __init__(self,root,width,height,key_callback=None):
+    def __init__(self,root,width,height,key_callback=None,mouse_callback=None):
         self.drawables = [] #list of drawable objects
 
         self.frame = tk.Frame(root)
         self.frame.focus_set()
         self.canvas = tk.Canvas(self.frame,bg="white",width=width,height=height)
         self.canvas.pack()
-        self.frame.pack()
-        print key_callback
+        self.frame.bind_all("<Motion>",mouse_callback)
         self.frame.bind("<Key>",key_callback)
+        self.frame.pack()
     def add_drawable(self,drawable):
         """
             Adds a drawable to the visualizer. 

@@ -22,7 +22,7 @@ def incircle(a,b,c,d):
     def get_vector(p):
         return [p.x,p.y,p.x**2+p.y**2,1]
     m = np.array([get_vector(a),get_vector(b),get_vector(c),get_vector(d)])
-    return np.linalg.det(m)>0
+    return np.linalg.det(m)<0
 
 def orient_2d(p,q,r):
     """
@@ -96,6 +96,7 @@ class Edge:
 class Face: #convex
     def __init__(self,edge=None):
         self.edge = edge
+        self.conflict = False
         self.id = generate_id()
     def neighbors(self):
         for edge in self.edges():
@@ -126,6 +127,13 @@ class Face: #convex
             if not edge.vertex_on_right(v):
                 return False
         return True
+    def incircle(self,vertex):
+        g = self.vertices()
+        a = next(g)
+        b = next(g)
+        c = next(g)
+        print a,b,c
+        return incircle(a,b,c,vertex)
     def dual(self):
         #TODO fix
         return Vertex(0,0)

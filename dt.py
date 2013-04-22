@@ -12,8 +12,22 @@ class Triangulation:
                 return face
         return None
 
-    def insert_site(self,vertex):
+    def insert_site(self,vertex,commit=True):
         face = self.locate(vertex)
+        if not commit:
+            conflicts = []
+            frontier = [face]
+            while frontier:
+                f = frontier.pop()
+                print f, f.incircle(vertex)
+                if f.incircle(vertex):
+                    conflicts.append(f)
+                    f.conflict=True
+                    for n in f.neighbors():
+                        if n not in conflicts:
+                            frontier.append(n)
+            self.vertices.append(vertex)
+            return
 
         #TODO: handle the case where a point lies on another edge
         #if vertex == edge.origin or vertex == edge.destination:

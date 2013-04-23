@@ -94,7 +94,7 @@ class QuadEdge:
         self.links = [None,None,None,None]
         self.id = generate_id()
     def default_handle(self):
-        return Handle(self,0)
+        return Handle(self,2)
     def __repr__(self):
         return "QuadEdge: " + str(self.id)
 

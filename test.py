@@ -49,6 +49,10 @@ def mouse_callback(event):
     handle = dt.locate(v)
     if handle.sym().has_face():
         vis.add_drawable(Polygon2D(handle.sym().face_vertices(),fill="red"))
+        for h in handle.sym().face_handles():
+            hs = h.sym()
+            if hs.has_face():
+                vis.add_drawable(Polygon2D(hs.face_vertices(),fill="blue"))
     else:
         print "No face"
     draw_skeleton()

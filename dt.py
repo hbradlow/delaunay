@@ -1,4 +1,4 @@
-from structures import Face, Edge, make_edge, sort_vertices_around
+from structures import Face, orient_2d
 import IPython
 
 class Triangulation:
@@ -8,10 +8,18 @@ class Triangulation:
         self.vertices = []
     
     def locate(self,vertex):
-        for face in self.faces:
-            if face.contains_vertex(vertex):
-                return face
-        return None
+        handle = self.edges[0].default_handle()
+        while True:
+            if vertex == handle.origin() or vertex == handle.destination():
+                return handle
+            elif handle.right_of(vertex):
+                handle = handle.sym()
+            elif handle.o_next() and not handle.o_next().right_of(vertex):
+                handle = handle.o_next()
+            elif handle.d_prev() and not handle.d_prev().right_of(vertex):
+                handle = handle.d_prev()
+            else:
+                return handle
 
     def merge_faces(self,faces):
         edges = []

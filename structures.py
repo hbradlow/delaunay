@@ -1,4 +1,5 @@
 import numpy as np
+
 id = 0
 def generate_id():
     global id
@@ -111,12 +112,15 @@ class Face: #convex
             edge.left = other
             edge.get_reverse().right = other
     def neighbors(self):
+        """
+            Returns a generator for the neighbors of this face.
+        """
         for edge in self.edges():
             if edge.right:
                 yield edge.right
     def reverse_edges(self):
         """
-            Return the edges of this face.
+            Return a generator for the reversed edges of this face.
         """
         e = self.edge.get_reverse().next()
         while e != self.edge:
@@ -127,7 +131,7 @@ class Face: #convex
             yield edge.origin
     def edges(self):
         """
-            Return the edges of this face.
+            Return a generator for the edges of this face.
         """
         e = self.edge.next()
         while e != self.edge:

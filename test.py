@@ -48,10 +48,12 @@ def mouse_callback(event):
     f = dt.locate(v)
     draw_faces()
     if f:
-        print f
         vis.add_drawable(Polygon2D(f.vertices()))
+        count = 0
         for n in f.neighbors():
+            count += 1
             vis.add_drawable(Polygon2D(n.vertices(),fill="blue"))
+        print "Num neighbors:",count
     draw_skeleton()
 
     vis.draw()

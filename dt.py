@@ -1,4 +1,5 @@
 from structures import Face, Edge, make_edge, sort_vertices_around
+import IPython
 
 class Triangulation:
     def __init__(self):
@@ -30,6 +31,11 @@ class Triangulation:
                     if edge.get_reverse() in self.edges:
                         self.edges.remove(edge.get_reverse())
 
+                    if edge in edges:
+                        edges.remove(edge)
+                    if edge.get_reverse() in edges:
+                        edges.remove(edge.get_reverse())
+
                     edge.remove()
                     edge.get_reverse().remove()
 
@@ -39,8 +45,9 @@ class Triangulation:
                             break
                     if face in self.faces:
                         self.faces.remove(face)
-                edges.append(edge)
-        return first_face.vertices()
+                else:
+                    edges.append(edge)
+        return first_face.vertices(), first_face
 
     def insert_site(self,vertex,commit=True):
         face = self.locate(vertex)
@@ -66,29 +73,34 @@ class Triangulation:
         #elif edge.contains(vertex):
         #    pass
 
-        vertices = self.merge_faces(conflicts)
+        vertices,first_face = self.merge_faces(conflicts)
 
         prev_face = face
         prev_vertex = None
         first_vertex = None
-        for v in vertices:
-            if not first_vertex:
-                first_vertex = v
-            f = Face()
-            self.edges.append(make_edge(vertex,v,right=prev_face,left=f))
-            self.faces.append(f)
+        try:
+            for v in vertices:
+                if not first_vertex:
+                    first_vertex = v
+                f = Face()
+                e = make_edge(vertex,v,right=prev_face,left=f)
+                self.edges.append(e)
+                self.edges.append(e.get_reverse())
+                self.faces.append(f)
 
-            if prev_vertex:
-                e1 = v.get_edge(prev_vertex)
-                e2 = prev_vertex.get_edge(v)
-                e2.left = prev_face
-                e1.right = prev_face
+                if prev_vertex:
+                    e1 = v.get_edge(prev_vertex)
+                    e2 = prev_vertex.get_edge(v)
+                    e2.left = prev_face
+                    e1.right = prev_face
 
-            prev_face = f
-            prev_vertex = v
-        e1 = first_vertex.get_edge(prev_vertex)
-        e2 = prev_vertex.get_edge(first_vertex)
-        e2.left = prev_face
-        e1.right = prev_face
+                prev_face = f
+                prev_vertex = v
+            e1 = first_vertex.get_edge(prev_vertex)
+            e2 = prev_vertex.get_edge(first_vertex)
+            e2.left = prev_face
+            e1.right = prev_face
+        except:
+            IPython.embed()
 
         self.vertices.append(vertex)

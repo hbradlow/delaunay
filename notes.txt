@@ -1,0 +1,8 @@
+Quad edge:
+Way to traverse edges on face:
+What to store (just edges, just vertices):
+    vertices just need coords, nothing more
+Merge triangles:
+    code from paper
+
+look up splice

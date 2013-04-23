@@ -13,11 +13,11 @@ edges.append(QuadEdge(vertices[1],vertices[2]))
 edges.append(QuadEdge(vertices[2],vertices[3]))
 edges.append(QuadEdge(vertices[3],vertices[0]))
 edges.append(QuadEdge(vertices[0],vertices[2]))
-edges[0].links = [None,edges[1],edges[4],None]
-edges[1].links = [None,edges[4],edges[0],None]
-edges[2].links = [None,edges[3],edges[4],None]
-edges[3].links = [None,edges[4],edges[2],None]
-edges[4].links = [edges[1],edges[2],edges[3],edges[0]]
+edges[0].links = [edges[4],None,None,edges[1]]
+edges[1].links = [edges[0],None,None,edges[4]]
+edges[2].links = [edges[4],None,None,edges[3]]
+edges[3].links = [edges[2],None,None,edges[4]]
+edges[4].links = [edges[3],edges[0],edges[1],edges[2]]
 
 vertices_to_add = [Vertex(275,150),Vertex(175,180)]
 
@@ -44,15 +44,20 @@ def key_callback(event):
     vis.draw()
 
 def mouse_callback(event):
-    vis.clear()
-    v = Vertex(event.x,event.y)
-    handle = dt.locate(v)
-    if handle.sym().has_face():
-        vis.add_drawable(Polygon2D(handle.sym().face_vertices(),fill="red"))
-    else:
-        print "No face"
-    draw_skeleton()
-    vis.draw()
+    print "TRY----------------"
+    try:
+        vis.clear()
+        v = Vertex(event.x,event.y)
+        handle = dt.locate(v)
+        if handle.has_face():
+            vis.add_drawable(Polygon2D(handle.face_vertices(),fill="red"))
+        else:
+            print "No face"
+        draw_skeleton()
+        vis.draw()
+    except:
+        draw_skeleton()
+        vis.draw()
 
 def click_callback(event):
     return

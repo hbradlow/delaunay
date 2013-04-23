@@ -10,6 +10,7 @@ class Triangulation:
     def locate(self,vertex):
         handle = self.edges[0].default_handle()
         while True:
+            print handle
             if vertex == handle.origin() or vertex == handle.destination():
                 return handle
             elif handle.right_of(vertex):

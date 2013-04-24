@@ -1,10 +1,28 @@
-from structures import Face, orient_2d, QuadEdge
+from structures import Face, orient_2d, QuadEdge, make_edge, Edge, splice
 import IPython
 
 class Triangulation:
-    def __init__(self):
-        self.edges = []
+    def __init__(self,a,b,c):
+        ea = make_edge()
+        ea.end_points(a,b)
+
+        eb = make_edge()
+        splice(ea.sym(),eb)
+        eb.end_points(b,c)
+
+        ec = make_edge()
+        splice(eb.sym(),ec)
+        ec.end_points(c,a)
+
+        splice(ec.sym(),ea)
+
+        self.edges = [ea,eb,ec]
         self.faces = []
+    
+    def initial_edge(self):
+        if self.edges:
+            return self.edges[0]
+        return None
     
     def locate(self,vertex):
         handle = self.edges[0].default_handle()

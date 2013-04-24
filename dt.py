@@ -1,11 +1,10 @@
-from structures import Face, orient_2d
+from structures import Face, orient_2d, QuadEdge
 import IPython
 
 class Triangulation:
     def __init__(self):
         self.edges = []
         self.faces = []
-        self.vertices = []
     
     def locate(self,vertex):
         handle = self.edges[0].default_handle()
@@ -58,22 +57,7 @@ class Triangulation:
         return first_face.vertices(), first_face
 
     def insert_site(self,vertex,commit=True):
-        face = self.locate(vertex)
-        conflicts = []
-        frontier = [face]
-        while frontier:
-            f = frontier.pop()
-            if f.incircle(vertex):
-                conflicts.append(f)
-                if not commit:
-                    f.conflict=True
-                for n in f.neighbors():
-                    if n not in conflicts:
-                        frontier.append(n)
-        if not commit:
-            self.vertices.append(vertex)
-            return
-
+        handle = self.locate(vertex)
 
         #TODO: handle the case where a point lies on another edge
         #if vertex == edge.origin or vertex == edge.destination:
@@ -81,34 +65,18 @@ class Triangulation:
         #elif edge.contains(vertex):
         #    pass
 
-        vertices,first_face = self.merge_faces(conflicts)
+        #add new edges
+        prev_handle = None
+        for h in [a for a in handle.sym().face_handles()]:
+            e = QuadEdge(vertex,h.origin())
+            e.default_handle().sym().splice_with(h)
+            print e
+            print h.f_next()
+            print e.default_handle().f_next()
+            self.edges.append(e)
 
-        prev_face = face
-        prev_vertex = None
-        first_vertex = None
-        try:
-            for v in vertices:
-                if not first_vertex:
-                    first_vertex = v
-                f = Face()
-                e = make_edge(vertex,v,right=prev_face,left=f)
-                self.edges.append(e)
-                self.edges.append(e.get_reverse())
-                self.faces.append(f)
-
-                if prev_vertex:
-                    e1 = v.get_edge(prev_vertex)
-                    e2 = prev_vertex.get_edge(v)
-                    e2.left = prev_face
-                    e1.right = prev_face
-
-                prev_face = f
-                prev_vertex = v
-            e1 = first_vertex.get_edge(prev_vertex)
-            e2 = prev_vertex.get_edge(first_vertex)
-            e2.left = prev_face
-            e1.right = prev_face
-        except:
-            IPython.embed()
+            if prev_handle:
+                prev_handle.splice_with(e.default_handle())
+            prev_handle = e.default_handle()
 
         self.vertices.append(vertex)

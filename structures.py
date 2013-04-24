@@ -26,7 +26,7 @@ class Vertex:
         self.y = y
         self.id = generate_id()
     def __repr__(self):
-        return "Vertex: " + str(self.id)
+        return "Vertex: " + str(self.id) + "(" + str(self.x) + "," + str(self.y) + ")"
 
 class Handle:
     def __init__(self,edge,orientation):
@@ -44,8 +44,73 @@ class Handle:
             return self.edge.origin
         else:
             return self.edge.destination
+    def splice_with(self,handle):
+        a = self
+        b = handle
+
+        a_next = self.o_next()
+        if not a_next:
+            a_next = self
+        b_next = handle.o_next()
+        if not b_next:
+            b_next = handle
+
+        alpha = a_next.rot()
+        beta = b_next.rot()
+        t1 = b_next;
+        t2 = a_next;
+        t3 = beta.o_next();
+        t4 = alpha.o_next();
+
+        a.update_o_next(t1.edge);
+        b.update_o_next(t2.edge);
+        alpha.update_o_next(t3.edge);
+        beta.update_o_next(t4.edge);
+        return
+
+        a_next = self.o_next()
+        if not a_next:
+            a_next = self
+        b_next = handle.o_next()
+        if not b_next:
+            b_next = handle
+
+        if self.in_same_ring(handle): #split into two
+            print "Splitting"
+            self.o_next().rot().update_o_next(handle.edge)
+            self.update_o_next(b_next.edge)
+
+            handle.o_next().rot().update_o_next(self.edge)
+            handle.update_o_next(a_next.edge)
+        else:
+            print "Combining"
+            b_next.rot().update_o_next(handle.edge)
+            self.update_o_next(b_next.edge)
+
+            a_next.rot().update_o_next(self.edge)
+            handle.update_o_next(a_next.edge)
+
+    def in_same_ring(self,handle):
+        """
+            checks that self is in the same ring as handle
+        """ 
+        next = self.o_next()
+        while next and next.edge != self.edge:
+            if next == handle:
+                return True
+            next = next.o_next()
+        return False
+
+    def connect_with(self,handle):
+        e = QuadEdge(self.destination(),handle.origin())
+
+        e.default_handle().splice_with(self.l_next())
+        e.default_handle().sym().splice_with(handle)
+
     def has_face(self):
         return self.f_next()
+    def update_o_next(self,edge):
+        self.edge.links[self.orientation] = edge
     def face_vertices(self):
         for handle in self.face_handles():
             yield handle.origin()
@@ -65,16 +130,26 @@ class Handle:
             First to o_next then flip it.
         """
         return self.sym().o_next()
+    def o_prev(self):
+        return self.rot().o_next().rot()
     def o_next(self):
         edge = self.edge.links[self.orientation]
         if edge:
-            if edge.origin == self.edge.origin:
+            if edge.origin == self.sym().origin():
                 return edge.default_handle()
             else:
                 return edge.default_handle().sym()
         return None
     def d_prev(self):
-        return self.invrot().o_next().invrot()
+        if self.invrot() and self.invrot().o_next():
+            return self.invrot().o_next().invrot()
+        else:
+            return None
+    def l_next(self):
+        if self.invrot().o_next():
+            return self.invrot().o_next().rot()
+        else:
+            return None
     def sym(self):
         o = (self.orientation+2)%4
         return Handle(self.edge,o)
@@ -91,12 +166,12 @@ class QuadEdge:
     def __init__(self,origin,destination):
         self.origin = origin
         self.destination = destination
-        self.links = [None,None,None,None]
+        self.links = [self,self,self,self]
         self.id = generate_id()
     def default_handle(self):
         return Handle(self,2)
     def __repr__(self):
-        return "QuadEdge: " + str(self.id)
+        return "QuadEdge: " + str(self.id) + "(" + str(self.origin) + "->" + str(self.destination) + ")"
 
 class Face: #convex
     def __init__(self,edge=None):

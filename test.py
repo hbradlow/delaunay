@@ -54,14 +54,13 @@ def mouse_callback(event):
             if hs.has_face():
                 vis.add_drawable(Polygon2D(hs.face_vertices(),fill="blue"))
     else:
-        print "No face"
+        pass
     draw_skeleton()
     vis.draw()
 
 def click_callback(event):
-    return
     v = Vertex(event.x,event.y)
-    if dt.locate(v):
+    if dt.locate(v).sym().has_face():
         dt.insert_site(v)
     vis.clear()
     draw_faces()

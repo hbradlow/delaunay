@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 id = 0
 def generate_id():
@@ -25,6 +26,8 @@ class Vertex:
         self.x = x
         self.y = y
         self.id = generate_id()
+    def distance_to(self,v):
+        return math.sqrt((self.x-v.x)**2 + (self.y-v.y)**2)
     def __repr__(self):
         return "Vertex: " + str(self.id) + "(" + str(self.x) + "," + str(self.y) + ")"
 
@@ -66,9 +69,26 @@ def swap(e):
     splice(e.sym(),b.l_next())
     e.end_points(a.dest(),b.dest())
 
+def left_of(p,e):
+    #dest 2d?
+    return orient_2d(p,e.org(),e.dest())>0
+
 def right_of(p,e):
     #dest 2d?
-    return orient_2d(p,e.dest(),e.org())
+    return orient_2d(p,e.dest(),e.org())>0
+
+def on_edge(x,e):
+    #TODO
+    epsilon = .1
+    t1 = x.distance_to(e.org())
+    t2 = x.distance_to(e.dest())
+    if t1<epsilon or t2<epsilon:
+        return True
+    t3 = e.org().distance_to(e.dest())
+    if t1>t3 or t2>t3:
+        return False
+
+    return False
 
 class Edge:
     def __init__(self,q):
@@ -99,10 +119,10 @@ class Edge:
     def r_prev(self):
         return self.sym().o_next()
     def org(self):
-        return data
+        return self.data
     def dest(self):
         return self.sym().org()
-    def endpoints(p1,p2):
+    def end_points(self,p1,p2):
         self.data = p1
         self.sym().data = p2
     def q_edge(self):

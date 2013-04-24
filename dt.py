@@ -1,4 +1,4 @@
-from structures import Face, orient_2d, QuadEdge, make_edge, Edge, splice
+from structures import *
 import IPython
 
 class Triangulation:
@@ -24,7 +24,20 @@ class Triangulation:
             return self.edges[0]
         return None
     
-    def locate(self,vertex):
+    def locate(self,x):
+        e = self.initial_edge()
+        while True:
+            if x == e.org() or x == e.dest():
+                return e
+            elif right_of(x,e):
+                e = e.sym()
+            elif not right_of(x,e.o_next()):
+                e = e.o_next()
+            elif not right_of(x,e.d_prev()):
+                e = e.d_prev()
+            else:
+                return e
+    def locate_old(self,vertex):
         handle = self.edges[0].default_handle()
         while True:
             if vertex == handle.origin() or vertex == handle.destination():
@@ -37,6 +50,32 @@ class Triangulation:
                 handle = handle.d_prev()
             else:
                 return handle
+    def insert_site(x):
+        e = self.locate(x)
+        if x == e.org() or x == e.dest():
+            return
+        elif on_edge(x,e):
+            e = e.o_prev()
+            delete_edge(e.o_next())
+
+        base = make_edge()
+        base.end_points(e.org(),x)
+        splice(base,e)
+        start = base
+
+        while e.l_next() != start:
+            base = connect(e,base.sym())
+            e = base.o_prev()
+
+        while True:
+            t = e.o_prev()
+            if right_of(t.dest(),e) and in_circle(e.org(),t.dest(),e.dest(),x):
+                swap(e)
+                e = e.o_prev()
+            elif e.o_next() == start:
+                return
+            else:
+                e = e.o_next().l_prev()
 
     def merge_faces(self,faces):
         edges = []
@@ -74,7 +113,7 @@ class Triangulation:
                     edges.append(edge)
         return first_face.vertices(), first_face
 
-    def insert_site(self,vertex,commit=True):
+    def insert_site_old(self,vertex,commit=True):
         handle = self.locate(vertex)
 
         #TODO: handle the case where a point lies on another edge

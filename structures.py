@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import IPython
 
 id = 0
 def generate_id():
@@ -96,6 +97,15 @@ class Edge:
         self.num = 0
         self.next = None
         self.data = None
+        self.id = generate_id()
+    def face_vertices(self):
+        yield self.data
+        e = self.l_prev()
+        while e!=self:
+            yield e.data
+            e = e.l_prev()
+    def __repr__(self):
+        return "Edge: " + str(self.id) + " (" + str(self.q) + ")"
     def rot(self):
         return self.q.edges[(self.num+1)%4]
     def invrot(self):
@@ -140,5 +150,9 @@ class QuadEdge:
         self.edges[1].next = self.edges[3]
         self.edges[2].next = self.edges[2]
         self.edges[3].next = self.edges[1]
+
+        self.id = generate_id()
+    def __repr__(self):
+        return "Quad: " + str(self.id)
     def default_edge(self):
         return self.edges[0]

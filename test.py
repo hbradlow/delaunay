@@ -32,13 +32,15 @@ def mouse_callback(event):
     vis.clear()
     v = Vertex(event.x,event.y)
     handle = dt.locate(v)
-    print handle
+    if handle:
+        vs = handle.face_vertices()
+        vis.add_drawable(Polygon2D(vs,fill="green"))
     draw_skeleton()
     vis.draw()
 
 def click_callback(event):
     v = Vertex(event.x,event.y)
-    if dt.locate(v).sym().has_face():
+    if dt.locate(v):
         dt.insert_site(v)
     vis.clear()
     draw_faces()

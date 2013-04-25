@@ -26,7 +26,9 @@ class Triangulation:
     
     def locate(self,x):
         e = self.initial_edge()
-        while True:
+        i = 1
+        while i<10:
+            i += 1
             if x == e.org() or x == e.dest():
                 return e
             elif right_of(x,e):
@@ -50,7 +52,7 @@ class Triangulation:
                 handle = handle.d_prev()
             else:
                 return handle
-    def insert_site(x):
+    def insert_site(self,x):
         e = self.locate(x)
         if x == e.org() or x == e.dest():
             return

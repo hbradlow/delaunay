@@ -6,7 +6,7 @@ from dt import Triangulation
 import IPython
 
 #initial setup
-vertices = [Vertex(250,100),Vertex(100,200),Vertex(200,300),Vertex(500,100)]
+vertices = [Vertex(550,100),Vertex(100,200),Vertex(500,500),Vertex(500,100)]
 
 dt = Triangulation(vertices[0],vertices[1],vertices[2])
 
@@ -17,10 +17,11 @@ def draw_faces():
         if face.conflict:
             vis.add_drawable(Polygon2D(face.vertices(),fill="green"))
 def draw_skeleton():
-    for edge in dt.edges:
-        vis.add_drawable(Line2D(edge.org(),edge.dest()))
-        vis.add_drawable(Point2D(edge.org()))
-        vis.add_drawable(Point2D(edge.dest()))
+    for edge in dt.initial_edge().q.all_edges():
+        if edge.org() and edge.dest():
+            vis.add_drawable(Line2D(edge.org(),edge.dest()))
+            vis.add_drawable(Point2D(edge.org()))
+            vis.add_drawable(Point2D(edge.dest()))
 
 def key_callback(event):
     dt.insert_site(vertices_to_add.pop())
@@ -34,18 +35,24 @@ def mouse_callback(event):
     handle = dt.locate(v)
     if handle:
         vs = handle.face_vertices()
-        vis.add_drawable(Polygon2D(vs,fill="green"))
+        vis.add_drawable(Polygon2D(vs,fill="red"))
     draw_skeleton()
     vis.draw()
 
+lock = False
 def click_callback(event):
+    global lock
+    if lock:
+        return
+    lock = True
     v = Vertex(event.x,event.y)
     if dt.locate(v):
-        dt.insert_site(v)
-    vis.clear()
-    draw_faces()
-    draw_skeleton()
-    vis.draw()
+        for a in dt.insert_site(v):
+            vis.clear()
+            draw_faces()
+            draw_skeleton()
+            vis.draw()
+    lock = False
 
 vis = Visualizer(root,800,600,key_callback=key_callback,mouse_callback=mouse_callback,click_callback=click_callback)
 draw_faces()

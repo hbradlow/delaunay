@@ -12,7 +12,7 @@ def incircle(a,b,c,d):
     def get_vector(p):
         return [p.x,p.y,p.x**2+p.y**2,1]
     m = np.array([get_vector(a),get_vector(b),get_vector(c),get_vector(d)])
-    return np.linalg.det(m)<0
+    return np.linalg.det(m)>0
 
 def orient_2d(p,q,r):
     """
@@ -152,6 +152,16 @@ class QuadEdge:
         self.edges[3].next = self.edges[1]
 
         self.id = generate_id()
+    def all_edges(self,seen=None):
+        if not seen:
+            seen = set()
+        seen.add(self.edges[0])
+        for e in self.edges:
+            if e.next not in seen:
+                seen.add(e.next)
+                for s in e.next.q.all_edges(seen):
+                    seen.add(s)
+        return seen
     def __repr__(self):
         return "Quad: " + str(self.id)
     def default_edge(self):

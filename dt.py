@@ -23,11 +23,11 @@ class Triangulation:
         if self.edges:
             return self.edges[0]
         return None
-    
+
     def locate(self,x):
         e = self.initial_edge()
         i = 1
-        while i<10:
+        while i<100:
             i += 1
             if x == e.org() or x == e.dest():
                 return e
@@ -65,13 +65,16 @@ class Triangulation:
         splice(base,e)
         start = base
 
-        while e.l_next() != start:
+        while True:
             base = connect(e,base.sym())
             e = base.o_prev()
+            if e.l_next() == start:
+                break
 
         while True:
+            yield
             t = e.o_prev()
-            if right_of(t.dest(),e) and in_circle(e.org(),t.dest(),e.dest(),x):
+            if right_of(t.dest(),e) and incircle(e.org(),t.dest(),e.dest(),x):
                 swap(e)
                 e = e.o_prev()
             elif e.o_next() == start:

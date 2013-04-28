@@ -3,20 +3,22 @@ import IPython
 
 class Triangulation:
     def __init__(self,a,b,c):
-        ea = make_edge()
-        ea.end_points(a,b)
+        edge_a = make_edge()
+        edge_a.end_points(a,b)
 
-        eb = make_edge()
-        splice(ea.sym(),eb)
-        eb.end_points(b,c)
+        edge_b = make_edge()
+        splice(edge_a.sym(),edge_b)
+        edge_b.end_points(b,c)
 
-        ec = make_edge()
-        splice(eb.sym(),ec)
-        ec.end_points(c,a)
+        edge_c = make_edge()
+        splice(edge_b.sym(),edge_c)
+        edge_c.end_points(c,a)
 
-        splice(ec.sym(),ea)
+        splice(edge_c.sym(),edge_a)
 
-        self.edges = [ea,eb,ec]
+        self.edges = [edge_a,edge_b,edge_c]
+        self.bounds = [edge_a,edge_b,edge_c]
+        self.bound_points = [a,b,c]
         self.faces = []
     
     def initial_edge(self):
@@ -24,10 +26,35 @@ class Triangulation:
             return self.edges[0]
         return None
 
-    def locate(self,x):
+    def get_edges(self):
+        output = set()
+        l = set(self.initial_edge().q.edges)
+        while l:
+            e = l.pop()
+            output.add(e)
+            for i in e.next.q.edges:
+                if i not in output:
+                    l.add(i)
+        return output
+
+    def get_triangles(self):
+        triangles = []
+        seen = set()
+        for e in self.get_edges():
+            l = [v for v in e.face_vertices()]
+            if None not in l and len(l)==3:
+                triangles.append(l)
+        return triangles
+
+    def conflict_locate(self,x,safe=False,limit=10):
+        return x.containing_face
+    def locate(self,x,safe=False,limit=10):
+        """
+            Walking algorithm to locate the vertex.
+        """
         e = self.initial_edge()
         i = 1
-        while i<100:
+        while True and (not safe or i<limit):
             i += 1
             if x == e.org() or x == e.dest():
                 return e
@@ -39,21 +66,24 @@ class Triangulation:
                 e = e.d_prev()
             else:
                 return e
-    def locate_old(self,vertex):
-        handle = self.edges[0].default_handle()
-        while True:
-            if vertex == handle.origin() or vertex == handle.destination():
-                return handle
-            elif handle.right_of(vertex):
-                handle = handle.sym()
-            elif handle.o_next() and not handle.o_next().right_of(vertex):
-                handle = handle.o_next()
-            elif handle.d_prev() and not handle.d_prev().right_of(vertex):
-                handle = handle.d_prev()
-            else:
-                return handle
+    def remove_bounds(self):
+        """
+            Remove the triangles that were created from the initial triangle.
+        """
+        edges = set()
+        for e in self.edges:
+            if e.org() in self.bound_points or e.dest() in self.bound_points:
+                edges.add(e)
+        for edge in edges:
+            if edge in self.edges:
+                delete_edge(edge)
+                self.edges.remove(edge)
     def insert_site(self,x):
+        """
+            Insert a point into this triangulation. Taken from the paper.
+        """
         e = self.locate(x)
+
         if x == e.org() or x == e.dest():
             return
         elif on_edge(x,e):
@@ -61,18 +91,20 @@ class Triangulation:
             delete_edge(e.o_next())
 
         base = make_edge()
+        self.edges.append(base)
+
         base.end_points(e.org(),x)
         splice(base,e)
         start = base
 
         while True:
             base = connect(e,base.sym())
+            self.edges.append(base)
             e = base.o_prev()
             if e.l_next() == start:
                 break
 
         while True:
-            yield
             t = e.o_prev()
             if right_of(t.dest(),e) and incircle(e.org(),t.dest(),e.dest(),x):
                 swap(e)
@@ -81,64 +113,3 @@ class Triangulation:
                 return
             else:
                 e = e.o_next().l_prev()
-
-    def merge_faces(self,faces):
-        edges = []
-        duplicates = []
-        first_face = None
-        for face in faces:
-            if not first_face:
-                first_face = face
-            for edge in list(face.edges()):
-                if edge in edges or edge.get_reverse() in edges:
-                    duplicates.append(edge)
-
-                    face.merge_with(edge.left)
-
-                    if edge in self.edges:
-                        self.edges.remove(edge)
-                    if edge.get_reverse() in self.edges:
-                        self.edges.remove(edge.get_reverse())
-
-                    if edge in edges:
-                        edges.remove(edge)
-                    if edge.get_reverse() in edges:
-                        edges.remove(edge.get_reverse())
-
-                    edge.remove()
-                    edge.get_reverse().remove()
-
-                    for new_edge in edges:
-                        if new_edge not in duplicates:
-                            first_face.edge = new_edge
-                            break
-                    if face in self.faces:
-                        self.faces.remove(face)
-                else:
-                    edges.append(edge)
-        return first_face.vertices(), first_face
-
-    def insert_site_old(self,vertex,commit=True):
-        handle = self.locate(vertex)
-
-        #TODO: handle the case where a point lies on another edge
-        #if vertex == edge.origin or vertex == edge.destination:
-        #    return # we already handled this vertex
-        #elif edge.contains(vertex):
-        #    pass
-
-        #add new edges
-        prev_handle = None
-        for h in [a for a in handle.sym().face_handles()]:
-            e = QuadEdge(vertex,h.origin())
-            e.default_handle().sym().splice_with(h)
-            print e
-            print h.f_next()
-            print e.default_handle().f_next()
-            self.edges.append(e)
-
-            if prev_handle:
-                prev_handle.splice_with(e.default_handle())
-            prev_handle = e.default_handle()
-
-        self.vertices.append(vertex)

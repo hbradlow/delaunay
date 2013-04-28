@@ -23,10 +23,12 @@ def orient_2d(p,q,r):
     return (q.x-p.x)*(r.y-p.y) - (r.x-p.x)*(q.y-p.y)
 
 class Vertex:
-    def __init__(self,x,y,edges=None):
+    def __init__(self,x,y,edges=None,index=None,containing_face=None):
         self.x = x
         self.y = y
+        self.index = index
         self.id = generate_id()
+        self.containing_face = containing_face
     def distance_to(self,v):
         return math.sqrt((self.x-v.x)**2 + (self.y-v.y)**2)
     def __repr__(self):
@@ -71,11 +73,9 @@ def swap(e):
     e.end_points(a.dest(),b.dest())
 
 def left_of(p,e):
-    #dest 2d?
     return orient_2d(p,e.org(),e.dest())>0
 
 def right_of(p,e):
-    #dest 2d?
     return orient_2d(p,e.dest(),e.org())>0
 
 def on_edge(x,e):
@@ -98,7 +98,37 @@ class Edge:
         self.next = None
         self.data = None
         self.id = generate_id()
+    def neighbors(self):
+        """
+            Returns the neighboring faces of the face definated by this edge.
+        """
+        fv = [self]
+        e = self.l_prev()
+        while e!=self:
+            fv.append(e)
+            e = e.l_prev()
+
+        if self.o_prev() not in fv:
+            yield self.o_prev()
+        e = self.l_prev()
+        while e!=self:
+            if e.o_prev() not in fv:
+                yield e.o_prev()
+            e = e.l_prev()
+    def vertex_chain(self):
+        """
+            The edges that all have self.org() as their origin.
+        """
+        l = [self]
+        e = self.o_next()
+        while e != self:
+            l.append(e)
+            e = e.o_next()
+        return l
     def face_vertices(self):
+        """
+            The vertices around the face that is defined by this edge.
+        """
         yield self.data
         e = self.l_prev()
         while e!=self:
@@ -133,10 +163,11 @@ class Edge:
     def dest(self):
         return self.sym().org()
     def end_points(self,p1,p2):
+        """
+            Set the endpoints of this edge.
+        """
         self.data = p1
         self.sym().data = p2
-    def q_edge(self):
-        return
 
 class QuadEdge:
     def __init__(self):
@@ -152,17 +183,6 @@ class QuadEdge:
         self.edges[3].next = self.edges[1]
 
         self.id = generate_id()
-    def all_edges(self,seen=None):
-        if not seen:
-            seen = set()
-        seen.add(self.edges[0])
-        for e in self.edges:
-            if e.next not in seen:
-                seen.add(e.next)
-                for s in e.next.q.all_edges(seen):
-                    seen.add(s)
-        return seen
-    def __repr__(self):
-        return "Quad: " + str(self.id)
+    def __repr__(self): return "Quad: " + str(self.id)
     def default_edge(self):
         return self.edges[0]

@@ -24,12 +24,12 @@ v1 = Vertex(min_x-dx*100,min_y-dy*100)
 v2 = Vertex(min_x-dx*100,max_y+dy*200)
 v3 = Vertex(max_x+dx*200,min_y-dy*100)
 
-dt = Triangulation(v1,v2,v3)
+dt = Triangulation(v1,v2,v3,fast_locate=True)
 
 for edge in dt.edges:
-    edge.rot().data = vertices
+    edge.sym().rot().data = vertices
 for vertex in vertices:
-    vertex.containing_face = dt.initial_edge()
+    vertex.containing_face = dt.initial_edge().sym()
 
 for vertex in vertices:
     dt.insert_site(vertex)

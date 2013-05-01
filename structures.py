@@ -73,7 +73,7 @@ def swap(e):
     e.end_points(a.dest(),b.dest())
 
 def left_of(p,e):
-    return orient_2d(p,e.org(),e.dest())>0
+    return orient_2d(p,e.org(),e.dest())<0
 
 def right_of(p,e):
     return orient_2d(p,e.dest(),e.org())>0
@@ -115,6 +115,24 @@ class Edge:
             if e.o_prev() not in fv:
                 yield e.o_prev()
             e = e.l_prev()
+    def contains_vertex(self,v):
+        for edge in self.face_edges():
+            if right_of(v,edge):
+                return False
+        return True
+    def offer_vertices(self,vertices):
+        if not self.rot().data:
+            self.rot().data = [] #clear the vertices
+        remaining = []
+        for vertex in vertices:
+            if self.contains_vertex(vertex):
+                self.rot().data.append(vertex)
+                vertex.containing_face = self
+            else:
+                remaining.append(vertex)
+        for edge in self.face_edges():
+            edge.rot().data = self.rot().data
+        return remaining
     def vertex_chain(self):
         """
             The edges that all have self.org() as their origin.
@@ -125,6 +143,15 @@ class Edge:
             l.append(e)
             e = e.o_next()
         return l
+    def face_edges(self):
+        """
+            The edges around the face that is defined by this edge.
+        """
+        yield self
+        e = self.l_prev()
+        while e!=self:
+            yield e
+            e = e.l_prev()
     def face_vertices(self):
         """
             The vertices around the face that is defined by this edge.

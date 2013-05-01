@@ -15,8 +15,8 @@ def load_node(filename):
         num_vertices = int(l[0])
         for i in range(num_vertices):
             l = [a.strip() for a in f.readline().split(" ") if a]
-            x = 100+30*float(l[1])
-            y = 100+30*float(l[2])
+            x = 300+50*float(l[1])
+            y = 300+50*float(l[2])
             vertices.append(Vertex(x,y,index=int(l[0])))
     return vertices
 

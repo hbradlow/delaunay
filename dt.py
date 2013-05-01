@@ -2,7 +2,7 @@ from structures import *
 import IPython
 
 class Triangulation:
-    def __init__(self,a,b,c):
+    def __init__(self,a,b,c,fast_locate=False):
         edge_a = make_edge()
         edge_a.end_points(a,b)
 
@@ -20,6 +20,8 @@ class Triangulation:
         self.bounds = [edge_a,edge_b,edge_c]
         self.bound_points = [a,b,c]
         self.faces = []
+
+        self.fast_locate = fast_locate
     
     def initial_edge(self):
         if self.edges:
@@ -28,11 +30,11 @@ class Triangulation:
 
     def get_edges(self):
         output = set()
-        l = set(self.initial_edge().q.edges)
+        l = set([self.initial_edge(),self.initial_edge().sym()])
         while l:
             e = l.pop()
             output.add(e)
-            for i in e.next.q.edges:
+            for i in [e.next,e.next.sym()]:
                 if i not in output:
                     l.add(i)
         return output
@@ -41,9 +43,13 @@ class Triangulation:
         triangles = []
         seen = set()
         for e in self.get_edges():
-            l = [v for v in e.face_vertices()]
+            if e in seen:
+                continue
+            l = list(reversed([v for v in e.face_vertices()]))
             if None not in l and len(l)==3:
                 triangles.append(l)
+                for i in e.face_edges():
+                    seen.add(i)
         return triangles
 
     def conflict_locate(self,x,safe=False,limit=10):
@@ -82,15 +88,23 @@ class Triangulation:
         """
             Insert a point into this triangulation. Taken from the paper.
         """
-        e = self.locate(x)
+        if self.fast_locate:
+            e = self.conflict_locate(x)
+            vertex_set = e.rot().data
+        else:
+            e = self.locate(x)
 
+        #TODO: include this
+        """
         if x == e.org() or x == e.dest():
             return
         elif on_edge(x,e):
             e = e.o_prev()
             delete_edge(e.o_next())
+        """
 
         base = make_edge()
+        initial_edge = base.sym()
         self.edges.append(base)
 
         base.end_points(e.org(),x)
@@ -104,10 +118,19 @@ class Triangulation:
             if e.l_next() == start:
                 break
 
+        if self.fast_locate:
+            for edge in initial_edge.vertex_chain():
+                vertex_set = edge.offer_vertices(vertex_set)
+
         while True:
             t = e.o_prev()
             if right_of(t.dest(),e) and incircle(e.org(),t.dest(),e.dest(),x):
+                if self.fast_locate:
+                    vertex_set = e.rot().data + e.sym().rot().data
                 swap(e)
+                if self.fast_locate:
+                    vertex_set = e.sym().offer_vertices(vertex_set)
+                    vertex_set = e.offer_vertices(vertex_set)
                 e = e.o_prev()
             elif e.o_next() == start:
                 return

@@ -1,5 +1,4 @@
 from structures import *
-import IPython
 def output_ele(filename,triangles):
     with open(filename,"w") as f:
         s = str(len(triangles)) + " 3 " + "0\n"

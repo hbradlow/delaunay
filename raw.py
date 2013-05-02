@@ -30,7 +30,7 @@ v1 = Vertex(min_x-dx*100,min_y-dy*100)
 v2 = Vertex(min_x-dx*100,max_y+dy*200)
 v3 = Vertex(max_x+dx*200,min_y-dy*100)
 
-dt = Triangulation(v1,v2,v3,fast_locate=False)
+dt = Triangulation(v1,v2,v3,fast_locate=True)
 
 total = len(vertices)
 for index,vertex in enumerate(vertices):

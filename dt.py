@@ -1,5 +1,4 @@
 from structures import *
-import IPython
 
 class SimpleEdge:
     def __init__(self,org,dest):

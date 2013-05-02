@@ -8,7 +8,6 @@ from parse import load_node
 
 lock = threading.Lock()
 
-import IPython
 
 #initial setup
 vertices = load_node("spiral.node")

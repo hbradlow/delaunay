@@ -1,6 +1,4 @@
-import numpy as np
 import math
-import IPython
 
 id = 0
 def generate_id():
@@ -8,11 +6,20 @@ def generate_id():
     id += 1
     return id
 
+from itertools import product, islice
+def det(M,prod=1):
+    dim = len(M)
+    if dim == 1:
+        return prod * M.pop().pop()
+    it = product(xrange(1,dim),repeat=2)
+    prod *= M[0][0]
+    return det([[M[x][y]-M[x][0]*(M[0][y]/M[0][0]) for x,y in islice(it,dim-1)] for i in xrange(dim-1)],prod)
+
 def incircle(a,b,c,d):
     def get_vector(p):
         return [p.x,p.y,p.x**2+p.y**2,1]
-    m = np.array([get_vector(a),get_vector(b),get_vector(c),get_vector(d)])
-    return np.linalg.det(m)>0
+    m = [get_vector(a),get_vector(b),get_vector(c),get_vector(d)]
+    return det(m)>0
 
 def orient_2d(p,q,r):
     """

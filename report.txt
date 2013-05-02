@@ -1,0 +1,7 @@
+Walking 10 000 - 14.76
+Walking 100 000 - 409.13
+Walking 1 000 000 - 
+
+Fast 10 000 - 10.64 seconds
+Fast 100 000 - 123.36 seconds
+Fast 1 000 000 - 1424.51 seconds

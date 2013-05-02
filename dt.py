@@ -1,6 +1,32 @@
 from structures import *
 import IPython
 
+class SimpleEdge:
+    def __init__(self,org,dest):
+        self.o = org
+        self.d = dest
+    def org(self):
+        return self.o
+    def dest(self):
+        return self.d
+class DAGNode:
+    def __init__(self,edge=None):
+        self.children = []
+        self.edges = []
+        self.edge = edge
+        self.id = generate_id()
+        if edge:
+            for e in edge.face_edges():
+                self.edges.append(SimpleEdge(e.org(),e.dest()))
+                e.rot().data = self
+    def contains_vertex(self,v):
+        for edge in self.edges:
+            if right_of(v,edge):
+                return False
+        return True
+    def __repr__(self):
+        return "DAGNODE: " + str(self.id)
+
 class Triangulation:
     def __init__(self,a,b,c,fast_locate=False):
         edge_a = make_edge()
@@ -22,6 +48,10 @@ class Triangulation:
         self.faces = []
 
         self.fast_locate = fast_locate
+
+        self.dag = DAGNode(self.initial_edge().sym())
+        for edge in self.edges:
+            edge.sym().rot().data = self.dag
     
     def initial_edge(self):
         if self.edges:
@@ -52,8 +82,16 @@ class Triangulation:
                     seen.add(i)
         return triangles
 
-    def conflict_locate(self,x,safe=False,limit=10):
-        return x.containing_face
+    def dag_locate(self,x,safe=False,limit=10):
+        node = self.dag
+        found = True
+        while node.children and found:
+            found = False
+            for n in node.children:
+                if n.contains_vertex(x):
+                    node = n
+                    found = True
+        return node.edge
     def locate(self,x,safe=False,limit=10):
         """
             Walking algorithm to locate the vertex.
@@ -89,8 +127,8 @@ class Triangulation:
             Insert a point into this triangulation. Taken from the paper.
         """
         if self.fast_locate:
-            e = self.conflict_locate(x)
-            vertex_set = e.rot().data
+            e = self.dag_locate(x)
+            node = e.rot().data
         else:
             e = self.locate(x)
 
@@ -120,17 +158,21 @@ class Triangulation:
 
         if self.fast_locate:
             for edge in initial_edge.vertex_chain():
-                vertex_set = edge.offer_vertices(vertex_set)
+                new_node = DAGNode(edge)
+                node.children.append(new_node)
 
         while True:
             t = e.o_prev()
             if right_of(t.dest(),e) and incircle(e.org(),t.dest(),e.dest(),x):
                 if self.fast_locate:
-                    vertex_set = e.rot().data + e.sym().rot().data
+                    node1 = e.rot().data
+                    node2 = e.sym().rot().data
                 swap(e)
                 if self.fast_locate:
-                    vertex_set = e.sym().offer_vertices(vertex_set)
-                    vertex_set = e.offer_vertices(vertex_set)
+                    new_node1 = DAGNode(e)
+                    new_node2 = DAGNode(e.sym())
+                    node1.children = [new_node1,new_node2]
+                    node2.children = [new_node1,new_node2]
                 e = e.o_prev()
             elif e.o_next() == start:
                 return

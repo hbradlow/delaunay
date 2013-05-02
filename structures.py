@@ -143,6 +143,9 @@ class Edge:
             l.append(e)
             e = e.o_next()
         return l
+    def print_face(self):
+        for edge in self.face_edges():
+            print edge.org(),",",edge.dest()
     def face_edges(self):
         """
             The edges around the face that is defined by this edge.

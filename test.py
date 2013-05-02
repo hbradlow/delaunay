@@ -26,11 +26,6 @@ v3 = Vertex(max_x+dx*200,min_y-dy*100)
 
 dt = Triangulation(v1,v2,v3,fast_locate=True)
 
-for edge in dt.edges:
-    edge.sym().rot().data = vertices
-for vertex in vertices:
-    vertex.containing_face = dt.initial_edge().sym()
-
 for vertex in vertices:
     dt.insert_site(vertex)
 
@@ -63,7 +58,7 @@ def mouse_callback(event):
 
     vis.clear()
     v = Vertex(event.x,event.y)
-    handle = dt.locate(v,safe=True,limit=100)
+    handle = dt.dag_locate(v,safe=True,limit=100)
     if handle:
         vs = handle.face_vertices()
         vis.add_drawable(Polygon2D(vs,fill="red"))
@@ -82,7 +77,7 @@ def click_callback(event):
 
     v = Vertex(event.x,event.y)
     print v
-    if dt.locate(v):
+    if dt.dag_locate(v):
         dt.insert_site(v)
         vis.clear()
         draw_faces()

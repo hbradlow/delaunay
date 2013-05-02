@@ -30,20 +30,17 @@ v1 = Vertex(min_x-dx*100,min_y-dy*100)
 v2 = Vertex(min_x-dx*100,max_y+dy*200)
 v3 = Vertex(max_x+dx*200,min_y-dy*100)
 
-dt = Triangulation(v1,v2,v3,fast_locate=True)
-for edge in dt.edges:
-    edge.sym().rot().data = vertices
-for vertex in vertices:
-    vertex.containing_face = dt.initial_edge().sym()
+dt = Triangulation(v1,v2,v3,fast_locate=False)
 
 total = len(vertices)
 for index,vertex in enumerate(vertices):
-    if index%10==0:
+    if index%100==0:
         print 100.*index/total,"percent complete"
     dt.insert_site(vertex)
 
-dt.remove_bounds()
 print "Took",time.time()-start_time,"seconds to calculate"
+dt.remove_bounds()
+print "Took",time.time()-start_time,"seconds to generate with removed outer triangle"
 output_ele(basename + ".ele",dt.get_triangles())
 
-print "Took",time.time()-start_time,"seconds to complete"
+print "Took",time.time()-start_time,"seconds to output"

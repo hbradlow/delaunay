@@ -1,0 +1,6 @@
+To run the code:
+
+python triangulate.py <filename.node> [-f -r]
+
+-r -> randomize point order
+-f -> use fast point location

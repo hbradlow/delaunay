@@ -7,13 +7,83 @@ def generate_id():
     return id
 
 from itertools import product, islice
-def det(M,prod=1):
+def det_old(M,prod=1):
     dim = len(M)
     if dim == 1:
         return prod * M.pop().pop()
     it = product(xrange(1,dim),repeat=2)
     prod *= M[0][0]
     return det([[M[x][y]-M[x][0]*(M[0][y]/M[0][0]) for x,y in islice(it,dim-1)] for i in xrange(dim-1)],prod)
+def det(A):
+    """
+    Returns determinant of matrix A by method of Chio.
+    ernesto.adorio@updepp
+    U.P. Diliman Extension Program in Pampanga
+    sep 18, 2009.
+    attribution requested when using this code.
+    """
+    n = len(A)
+    AA = [A[i][:] for i in range(n)] # make a copy.
+    AA, A = A, AA # original A is now saved in AA.
+    B = None
+    denom = 1.0 
+    while n > 2:
+       # replace this VERY SLOW rule with your own rule.
+       # to select the pivot.
+       pivot  = A[0][0]
+       maxelt = abs(pivot)
+       pivrow = pivcol = 0
+       for i in range(n):
+           for j in range(n): 
+               if abs(A[i][j]) > maxelt:
+                  pivrow = i
+                  pivcol = j
+                  pivot = A[i][j] 
+                  maxelt = abs(A[i][j])
+ 
+       denom *= pivot**(n-2)   #     
+       # Form elements of submatrix B
+       B = [[0] * (n-1) for i in range(n)]   
+       for i in range(n):
+           for j in range(n):
+               if i < pivrow:
+                  if j < pivcol:
+                     B[i][j] =   (A[i][j] * A[pivrow][pivcol] - A[pivrow][j] * A[i][pivcol])
+                  elif j > pivcol:
+                     B[i][j-1] = (A[i][pivcol]* A[pivrow][j] - A[pivrow][pivcol] * A[i][j]) 
+               elif i > pivrow:
+                  if j < pivcol:
+                     B[i-1][j] = (A[pivrow][j]* A[i][pivcol] - A[i][j] * A[pivrow][pivcol])
+                  elif j > pivcol:
+                     B[i-1][j-1] = (A[pivrow][pivcol] * A[i][j] -A[i][pivcol] * A[pivrow][j])
+ 
+       A = [B[i][:] for i in range(n-1)]
+       n = n -1 
+ 
+    #Restore A.
+    A = AA
+ 
+    return (B[0][0] * B[1][1] - B[1][0] * B[0][1]) / float(denom)
+
+def det3(a):
+    a.append(a[0]); a.append(a[1]);
+    x = 0
+    for i in range(0, len(a)-2):
+        y=1;        
+        for j in range(0, len(a)-2):    
+            y *= a[i+j][j]      
+        x += y
+
+    p = 0
+    for i in range(0, len(a)-2):
+        y=1;
+        z = 0;
+        for j in range(2, -1, -1):  
+            y *= a[i+z][j]  
+            z+=1        
+        z += 1
+        p += y  
+    return x - p
 
 def incircle(a,b,c,d):
     def get_vector(p):

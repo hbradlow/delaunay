@@ -19,5 +19,19 @@ def load_node(filename):
             vertices.append(Vertex(x,y,index=int(l[0])))
     return vertices
 
+def write_node(filename,vertices):
+    with open(filename,"w") as f:
+        s = str(len(vertices)) + " 2 0 0\n"
+        f.write(s)
+        for index,v in enumerate(vertices):
+            f.write(str(index) + " " + str(v.x) + " " + str(v.y) + "\n")
+
+def generate_grid(size=10):
+    vertices = []
+    for i in range(size):
+        for j in range(size):
+            vertices.append(Vertex(i,j))
+    return vertices
+
 if __name__=="__main__":
     print load_node("spiral.node")
